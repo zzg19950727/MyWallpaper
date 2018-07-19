@@ -73,6 +73,8 @@ void DockerManager::searchNearDocker(HexWidget *docker)
         //忽略自己
         if(iter.key() == docker)
             continue;
+        if(iter.key()->isHidden())
+            continue;
         QPoint pos2 = iter.key()->pos();
         //先判断是否距离自己很远，忽略一些很远的容器
         if(outOfNear(pos1, pos2, size))

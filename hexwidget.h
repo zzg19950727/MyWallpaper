@@ -25,7 +25,7 @@ public:
     virtual void contextMenuEvent(QContextMenuEvent*);
     //接受文件拖拽
     void dragEnterEvent(QDragEnterEvent*);
-    void dropEvent(QDropEvent*);
+    void dropEvent(QDropEvent*);;
 
 public:
     void setSize(unsigned int x);

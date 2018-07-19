@@ -246,11 +246,15 @@ void HexWidget::setLock(bool)
 
 void HexWidget::closeDocker()
 {
+    if(__hideLinks)
+        slot_hideLinked();
     emit dockerClosed();
 }
 
 void HexWidget::freeDocker()
 {
+    if(__hideLinks)
+        slot_hideLinked();
     emit dockerFreed();
 }
 
