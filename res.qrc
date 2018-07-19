@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/add.ico</file>
+        <file>images/close.ico</file>
+        <file>images/free.ico</file>
+        <file>images/lock.ico</file>
+        <file>menu/about.ico</file>
+        <file>menu/bkg.jpg</file>
+        <file>menu/display.ico</file>
+        <file>menu/quit.ico</file>
+        <file>menu/repair.ico</file>
+        <file>menu/close.ico</file>
+    </qresource>
+</RCC>
