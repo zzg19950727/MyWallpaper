@@ -89,10 +89,12 @@ void HexWidget::paintEvent(QPaintEvent *event)
 void HexWidget::mousePressEvent(QMouseEvent *event)
 {
     if(!__lock)
-    if(event->button()==Qt::LeftButton)
     {
-        __dragPosition = event->globalPos();
-        event->accept();
+        if(event->button()==Qt::LeftButton)
+        {
+            __dragPosition = event->globalPos();
+            event->accept();
+        }
     }
 }
 
