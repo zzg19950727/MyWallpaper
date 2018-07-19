@@ -28,6 +28,7 @@ HexWidget::HexWidget(QWidget *parent)
     //设置默认大小
     setSize(70);
     __lock = false;
+    __hideLinks = false;
 }
 
 HexWidget::~HexWidget()
@@ -134,6 +135,7 @@ void HexWidget::mouseDoubleClickEvent(QMouseEvent *)
         QString file = "file:///"+url;
         ShellExecute(0,L"open",file.toStdWString().c_str(), L"",L"",SW_SHOWNORMAL);
     }
+    //由于未知原因，Qt的API不能运行快捷方式，所以改用上述windows原生API
 //    if(!url.isEmpty())
 //        QDesktopServices::openUrl(QUrl("file:///"+url, QUrl::TolerantMode));
 }
@@ -158,18 +160,26 @@ void HexWidget::contextMenuEvent(QContextMenuEvent *e)
                         ");
     QAction* add = new QAction(QIcon(":images/add.ico"),"新建");
     connect(add, SIGNAL(triggered(bool)),this,SLOT(newDocker()));
+
     QString lock_text = __lock?"解锁":"锁定";
     QAction* lock_pos = new QAction(QIcon(":images/lock.ico"),lock_text);
     connect(lock_pos, SIGNAL(triggered(bool)),this,SLOT(setLock(bool)));
-    QAction* close = new QAction(QIcon(":images/close.ico"),"关闭");
-    connect(close, SIGNAL(triggered(bool)), this, SLOT(closeDocker()));
+
     QAction* free = new QAction(QIcon(":images/free.ico"),"分离");
     connect(free, SIGNAL(triggered(bool)), this, SLOT(freeDocker()));
+
+    QString hide_text = __hideLinks?"展开":"收拢";
+    QAction* hide = new QAction(QIcon(":images/free.ico"),hide_text);
+    connect(hide, SIGNAL(triggered(bool)), this, SLOT(slot_hideLinked()));
+
+    QAction* close = new QAction(QIcon(":images/close.ico"),"关闭");
+    connect(close, SIGNAL(triggered(bool)), this, SLOT(closeDocker()));
 
     menu->addAction(add);
     menu->addAction(lock_pos);
     menu->addAction(lock_pos);
     menu->addAction(free);
+    menu->addAction(hide);
     menu->addAction(close);
     menu->exec(e->globalPos());
     delete menu;
@@ -242,4 +252,10 @@ void HexWidget::closeDocker()
 void HexWidget::freeDocker()
 {
     emit dockerFreed();
+}
+
+void HexWidget::slot_hideLinked()
+{
+    __hideLinks = !__hideLinks;
+    emit hideLinkedDockers(__hideLinks);
 }

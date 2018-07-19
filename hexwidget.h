@@ -44,17 +44,22 @@ signals:
     void dockerAdjusted();
     //需要新建控件
     void createDocker();
+    //隐藏周围容器，相当于收集效果
+    void hideLinkedDockers(bool);
 
 public slots:
     void newDocker();
     void setLock(bool);
     void closeDocker();
     void freeDocker();
+    void slot_hideLinked();
 
 private:
     QPoint __dragPosition;
     //锁定位置，能不能移动
     bool __lock;
+    //隐藏相连的容器
+    bool __hideLinks;
     QString url;
     QPixmap icon;
 };

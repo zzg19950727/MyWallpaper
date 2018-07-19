@@ -45,6 +45,7 @@ class DesktopGo : public QWidget
 public:
     explicit DesktopGo(QWidget *parent = 0);
     void initTrayUI();
+    //重新定义鼠标拖拽移动窗口功能
     void mousePressEvent(QMouseEvent*);
     void mouseMoveEvent(QMouseEvent*);
 
@@ -60,10 +61,13 @@ private slots:
     void hideSetWindow();
 
 private:
+    //托盘菜单
     PSystemTray systray;
+    //壁纸控件
     VideoWidget background;
+    //桌面整理控件
     DockerManager dockers;
-
+    //设置界面
     Ui::Form* setwindow;
     QPoint __dragPosition;
 };

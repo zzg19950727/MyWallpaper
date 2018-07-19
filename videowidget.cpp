@@ -4,6 +4,7 @@
 #include <QRect>
 #include <QFile>
 
+//枚举窗口寻找桌面图标窗口
 inline BOOL CALLBACK EnumWindowsProc(_In_ HWND   tophandle, _In_ LPARAM parm)
 {
     HWND iconw = FindWindowEx(tophandle, 0, L"SHELLDLL_DefView", nullptr);
@@ -38,6 +39,7 @@ VideoWidget::VideoWidget(QWidget* parent)
     setWallPaperParent();
     showFullScreen();
     mediaPlayer.setVideoOutput(this);
+    //原意用于视频意外停止自动恢复播放，然而与切换视频文件冲突，所以暂时弃用该功能
 //    connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
     connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
@@ -115,11 +117,13 @@ void VideoWidget::stateChanged(QMediaPlayer::State state)
 
 void VideoWidget::positionChanged(qint64 position)
 {
+    //由于Qt自带的循环播放功能会有暂停时间，影响体验，所以改用变换播放位置来达到循环播放功能
     if(position > currentDuration-1000)
         mediaPlayer.setPosition(0);
 }
 
 void VideoWidget::durationChanged(qint64 duration)
 {
+    //记录当前视频的时长
     currentDuration = duration;
 }

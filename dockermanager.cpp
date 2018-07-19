@@ -10,6 +10,7 @@
 #include <QIODevice>
 #include <QFile>
 
+//遍历邻接矩阵，查看是否有相邻的容器
 bool DockerManager::isFreeDocker(const QVector<HexWidget *> &vec)
 {
     for(int i=0; i<vec.size(); ++i)
@@ -18,6 +19,7 @@ bool DockerManager::isFreeDocker(const QVector<HexWidget *> &vec)
     return true;
 }
 
+//清空容器的邻接矩阵
 void DockerManager::setDockerFree(HexWidget *docker)
 {
     if(map.find(docker)!=map.end())
@@ -28,13 +30,16 @@ void DockerManager::setDockerFree(HexWidget *docker)
             HexWidget* w = (*iter)[i];
             if(w)
             {
+                //先把自己从对方的邻接矩阵中移除
                 removeFromMap(w, docker);
+                //再将对象从自己的邻接矩阵中移除
                 (*iter)[i] = 0;
             }
         }
     }
 }
 
+//将dst容器从src的邻接矩阵中移除
 void DockerManager::removeFromMap(HexWidget *src, HexWidget *dst)
 {
     if(map.find(src) != map.end())
@@ -44,6 +49,7 @@ void DockerManager::removeFromMap(HexWidget *src, HexWidget *dst)
         {
             if((*iter)[i] == dst)
             {
+                //找到直接移除
                 (*iter)[i] = 0;
                 break;
             }
@@ -51,23 +57,31 @@ void DockerManager::removeFromMap(HexWidget *src, HexWidget *dst)
     }
 }
 
+//搜索所有的容器，找出与容器相邻的容器
+//相邻的概念：距离自己较近的容器
 void DockerManager::searchNearDocker(HexWidget *docker)
 {
     HexWidget* result = NULL;
+    //与自己的哪一面相邻
     int type = -1;
+    //容器的单位size
     double size = docker->getSize()/4.0;
+    //自己的位置
     QPoint pos1 = docker->pos();
     for(auto iter = map.begin(); iter!=map.end(); ++iter)
     {
+        //忽略自己
         if(iter.key() == docker)
             continue;
         QPoint pos2 = iter.key()->pos();
+        //先判断是否距离自己很远，忽略一些很远的容器
         if(outOfNear(pos1, pos2, size))
             continue;
-
+        //判断与自己哪一面相邻
         type = checkNear(pos1, pos2, size);
         if(type >= 0)
         {
+            //在对应的邻接矩阵位置上添加记录
             map[docker][type] = iter.key();
             map[iter.key()][(type+3)%6] = docker;
             result = iter.key();
@@ -75,10 +89,13 @@ void DockerManager::searchNearDocker(HexWidget *docker)
     }
     if(result)
     {
+        //调整自己的位置与目标相连
         adjustPos(result, docker, type);
     }
 }
 
+//下面三个函数需要在草稿纸上画着两个六边形理解
+//判断两个位置上的容器是否相离“很远”
 bool DockerManager::outOfNear(const QPoint &pos1, const QPoint &pos2, double size)
 {
     int x = pos2.x() - pos1.x();
@@ -89,6 +106,7 @@ bool DockerManager::outOfNear(const QPoint &pos1, const QPoint &pos2, double siz
         return false;
 }
 
+//检查pos2上的容器在pos1上的容器的哪一面
 int DockerManager::checkNear(const QPoint &pos1, const QPoint &pos2, double size)
 {
     int x = pos2.x() - pos1.x();
@@ -109,6 +127,7 @@ int DockerManager::checkNear(const QPoint &pos1, const QPoint &pos2, double size
         return -1;
 }
 
+//调整to容器的位置到from容器的指定相邻位置
 void DockerManager::adjustPos(HexWidget *from, HexWidget *to, int type)
 {
     auto rect = from->geometry();
@@ -147,6 +166,7 @@ void DockerManager::adjustPos(HexWidget *from, HexWidget *to, int type)
     to->setGeometry(rect);
 }
 
+//利用广度优先搜索算法查找容器所在的连通图
 void DockerManager::searchLinkedDocker(HexWidget *docker, QSet<HexWidget *> &list)
 {
     QQueue<HexWidget*> que;
@@ -178,6 +198,7 @@ DockerManager::DockerManager(QObject *parent) : QObject(parent)
 {
     savePath = "DesktopGO.save";
     recover();
+    //定时保存状态，避免程序崩溃导致用户配置丢失
     connect(&timer, SIGNAL(timeout()), this, SLOT(save()));
     timer.start(5000);
 }
@@ -198,6 +219,7 @@ HexWidget* DockerManager::addDocker(const QString& url)
     connect(docker, SIGNAL(dockerFreed()), this, SLOT(freeDocker()));
     connect(docker, SIGNAL(createDocker()), this ,SLOT(createDocker()));
     connect(docker, SIGNAL(dockerClosed()), this, SLOT(closeDocker()));
+    connect(docker, SIGNAL(hideLinkedDockers(bool)), this, SLOT(hideLinkedDockers(bool)));
     return docker;
 }
 
@@ -213,9 +235,11 @@ HexWidget *DockerManager::addDocker(const QString &url, const QPoint &pos)
     connect(docker, SIGNAL(dockerFreed()), this, SLOT(freeDocker()));
     connect(docker, SIGNAL(createDocker()), this ,SLOT(createDocker()));
     connect(docker, SIGNAL(dockerClosed()), this, SLOT(closeDocker()));
+    connect(docker, SIGNAL(hideLinkedDockers(bool)), this, SLOT(hideLinkedDockers(bool)));
     return docker;
 }
 
+//关闭指定容器
 void DockerManager::delDocker(HexWidget *docker)
 {
     setDockerFree(docker);
@@ -232,10 +256,12 @@ int DockerManager::size()
     return map.size();
 }
 
+//以json格式保存当前状态
 void DockerManager::save()
 {
     QMap<HexWidget*, int> vecMap;
     int i=0;
+    //为所有容器建立索引
     for(auto iter = map.cbegin(); iter!=map.cend(); ++iter, ++i)
     {
         vecMap[iter.key()] = i;
@@ -244,11 +270,13 @@ void DockerManager::save()
     QJsonArray array;
     for(auto iter = map.cbegin(); iter!=map.cend(); ++iter)
     {
+        //保存每个容器的URL及位置
         QJsonObject object;
         object.insert("URL", QString(iter.key()->getUrl().toLocal8Bit().toHex()));
         object.insert("X", iter.key()->frameGeometry().topLeft().x());
         object.insert("Y", iter.key()->frameGeometry().topLeft().y());
 
+        //保存邻接矩阵
         QJsonArray linked;
         for(int i=0; i<iter->size(); ++i)
         {
@@ -275,6 +303,7 @@ void DockerManager::save()
     file.close();
 }
 
+//读取配置文件，恢复状态
 void DockerManager::recover()
 {
     QByteArray bytes;
@@ -294,6 +323,7 @@ void DockerManager::recover()
     {
         if(doc.isArray())
         {
+            //读取容器列表
             QJsonArray array = doc.array();
             for(int i=0; i<array.size(); ++i)
             {
@@ -304,12 +334,14 @@ void DockerManager::recover()
                     int x;
                     int y;
                     QVector<int> linked;
+                    //读取URL
                     if(object.contains("URL"))
                     {
                         QJsonValue value = object.value("URL");
                         if(value.isString())
                             url = QString::fromLocal8Bit(QByteArray::fromHex(value.toString().toLocal8Bit()));
                     }
+                    //读取容器坐标
                     if(object.contains("X"))
                     {
                         QJsonValue value = object.value("X");
@@ -322,6 +354,7 @@ void DockerManager::recover()
                         if(value.isDouble())
                             y = value.toDouble();
                     }
+                    //读取容器的邻接矩阵
                     if(object.contains("Link"))
                     {
                         QJsonValue value = object.value("Link");
@@ -340,6 +373,7 @@ void DockerManager::recover()
             }
         }
     }
+    //恢复管理器的容器状态图
     if(vec.size() == vecMap.size() && !vec.isEmpty())
     {
         map.clear();
@@ -360,9 +394,9 @@ void DockerManager::recover()
         addDocker("");
 }
 
+//移动单个容器时，容器所在的连通图内所有容器会跟随移动
 void DockerManager::moveDocker(const QPoint &offset)
 {
-    emit beginMove();
     HexWidget* docker = (HexWidget*)this->sender();
 
     if(map.find(docker) != map.cend())
@@ -370,6 +404,7 @@ void DockerManager::moveDocker(const QPoint &offset)
         const QVector<HexWidget*>& vec = map[docker];
         if(!isFreeDocker(vec))
         {
+            //是否存在连通图缓存
             if(cache.empty())
             {
                 searchLinkedDocker(docker, cache);
@@ -377,16 +412,18 @@ void DockerManager::moveDocker(const QPoint &offset)
             for(auto iter=cache.begin(); iter!=cache.end(); ++iter)
             {
                 if((*iter) != docker)
+                {
                     (*iter)->move(offset+(*iter)->frameGeometry().topLeft());
+
+                }
             }
         }
-
     }
 }
 
+//单个容器移动完后会自动调整位置，达到自动拖拽连接的效果
 void DockerManager::adjustDocker()
 {
-    emit endMove();
     cache.clear();
     HexWidget* docker = (HexWidget*)this->sender();
     if(map.find(docker) != map.cend())
@@ -394,7 +431,6 @@ void DockerManager::adjustDocker()
         const QVector<HexWidget*>& vec = map[docker];
         if(isFreeDocker(vec))
             searchNearDocker(docker);
-
     }
 }
 
@@ -413,4 +449,27 @@ void DockerManager::closeDocker()
 void DockerManager::createDocker()
 {
     addDocker("");
+}
+
+//收拢指定容器所在的连通图
+void DockerManager::hideLinkedDockers(bool hide)
+{
+    HexWidget* docker = (HexWidget*)this->sender();
+    if(map.find(docker) != map.cend())
+    {
+        const QVector<HexWidget*>& vec = map[docker];
+        if(!isFreeDocker(vec))
+        {
+            searchLinkedDocker(docker, cache);
+            for(auto iter=cache.begin(); iter!=cache.end(); ++iter)
+            {
+                if((*iter) != docker)
+                {
+                    (*iter)->setHidden(hide);
+                }
+            }
+            cache.clear();
+        }
+
+    }
 }

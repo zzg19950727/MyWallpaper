@@ -39,10 +39,6 @@ public:
     HexWidget* addDocker(const QString& url, const QPoint& pos);
     int size();
 
-signals:
-    void beginMove();
-    void endMove();
-
 private slots:
     void save();
     void recover();
@@ -51,6 +47,7 @@ private slots:
     void freeDocker();
     void closeDocker();
     void createDocker();
+    void hideLinkedDockers(bool);
 
 private:
     //图标整理网络邻接表

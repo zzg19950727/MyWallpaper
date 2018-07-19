@@ -19,6 +19,7 @@ public:
     //保存壁纸路径
     void save();
     void read();
+    //设置为桌面壁纸窗口的子窗口
     void setWallPaperParent();
 
 private slots:
