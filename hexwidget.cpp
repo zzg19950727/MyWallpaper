@@ -218,6 +218,16 @@ QString HexWidget::getUrl()
     return url;
 }
 
+bool HexWidget::isLocked() const
+{
+    return __lock;
+}
+
+bool HexWidget::isHideLinks() const
+{
+    return __hideLinks;
+}
+
 void HexWidget::setUrl(const QString &u)
 {
     url = u;

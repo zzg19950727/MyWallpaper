@@ -274,10 +274,12 @@ void DockerManager::save()
     {
         //保存每个容器的URL及位置
         QJsonObject object;
+        object.insert("Lock", iter.key()->isLocked());
+        object.insert("Hidden", iter.key()->isHidden());
+        object.insert("HideLinks", iter.key()->isHideLinks());
         object.insert("URL", QString(iter.key()->getUrl().toLocal8Bit().toHex()));
         object.insert("X", iter.key()->frameGeometry().topLeft().x());
         object.insert("Y", iter.key()->frameGeometry().topLeft().y());
-
         //保存邻接矩阵
         QJsonArray linked;
         for(int i=0; i<iter->size(); ++i)
@@ -335,7 +337,26 @@ void DockerManager::recover()
                     QString url;
                     int x;
                     int y;
+                    bool lock, hidden, hideLinks;
                     QVector<int> linked;
+                    if(object.contains("Lock"))
+                    {
+                        QJsonValue value = object.value("Lock");
+                        if(value.isBool())
+                            lock = value.toBool();
+                    }
+                    if(object.contains("Hidden"))
+                    {
+                        QJsonValue value = object.value("Hidden");
+                        if(value.isBool())
+                            hidden = value.toBool();
+                    }
+                    if(object.contains("HideLinks"))
+                    {
+                        QJsonValue value = object.value("HideLinks");
+                        if(value.isBool())
+                            hideLinks = value.toBool();
+                    }
                     //读取URL
                     if(object.contains("URL"))
                     {
@@ -371,6 +392,11 @@ void DockerManager::recover()
                     vec.append(docker);
                     vecMap.append(linked);
                     docker->move(x,y);
+                    if(lock)
+                        docker->setLock(lock);
+                    docker->setHidden(hidden);
+                    if(hideLinks)
+                        docker->slot_hideLinked();
                 }
             }
         }
