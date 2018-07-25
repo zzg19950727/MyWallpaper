@@ -37,7 +37,6 @@ VideoWidget::VideoWidget(QWidget* parent)
     :QVideoWidget(parent)
 {
     setWallPaperParent();
-    showFullScreen();
     mediaPlayer.setVideoOutput(this);
     //原意用于视频意外停止自动恢复播放，然而与切换视频文件冲突，所以暂时弃用该功能
 //    connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));

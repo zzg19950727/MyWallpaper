@@ -337,7 +337,7 @@ void DockerManager::recover()
                     QString url;
                     int x;
                     int y;
-                    bool lock, hidden, hideLinks;
+                    bool lock=false, hidden=false, hideLinks=false;
                     QVector<int> linked;
                     if(object.contains("Lock"))
                     {

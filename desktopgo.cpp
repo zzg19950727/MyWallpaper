@@ -4,15 +4,39 @@
 #include <QStandardPaths>
 #include <QMouseEvent>
 #include <QMenu>
+#include <QDesktopWidget>
+#include <QApplication>
+#include <QDebug>
 
 DesktopGo::DesktopGo(QWidget *parent)
     : QWidget(parent),setwindow(new Ui::Form)
 {
-    initTrayUI();
     setwindow->setupUi(this);
+
+    QDesktopWidget* desktop = QApplication::desktop();
+    bgCount = desktop->screenCount();
+    background = new VideoWidget[bgCount];
+    for(int i=0; i<bgCount; ++i)
+    {
+        background[i].showFullScreen();
+        background[i].move(desktop->screen(i)->pos());
+        background[i].setMaximumSize(desktop->screen(i)->size());
+    }
+
+    initUI();
+    initTrayUI();
+}
+
+void DesktopGo::initUI()
+{
     this->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+
+    setwindow->comboBox_screen->addItem("所有屏幕");
+    for(int i=0; i<bgCount; ++i)
+        setwindow->comboBox_screen->addItem(QString("第%1块屏幕").arg(i+1));
     connect(setwindow->pushButton_close, SIGNAL(clicked(bool)), this, SLOT(hideSetWindow()));
     connect(setwindow->pushButton_wallpaper, SIGNAL(clicked(bool)), this, SLOT(openFile()));
+    connect(setwindow->checkBox_show, SIGNAL(stateChanged(int)), this, SLOT(showBackground()));
 }
 
 void DesktopGo::initTrayUI()
@@ -146,17 +170,25 @@ void DesktopGo::mouseMoveEvent(QMouseEvent *event)
 
 void DesktopGo::openFile()
 {
-    QUrl url = QFileDialog::getOpenFileUrl(&background);
+    QUrl url = QFileDialog::getOpenFileUrl(this);
     if(url.isLocalFile())
     {
-        background.setUrl(url);
+        int index = setwindow->comboBox_screen->currentIndex();
+        if(index)
+            background[index-1].setUrl(url);
+        else
+        {
+            for(int i=0; i<bgCount; ++i)
+                background[i].setUrl(url);
+        }
         setwindow->lineEdit_wallpaper->setText(url.toLocalFile());
     }
 }
 
 void DesktopGo::repair()
 {
-    background.repair();
+    for(int i=0; i<bgCount; ++i)
+        background[i].repair();
 }
 
 void DesktopGo::quit()
@@ -172,4 +204,29 @@ void DesktopGo::showSetWindow()
 void DesktopGo::hideSetWindow()
 {
     close();
+}
+
+void DesktopGo::showBackground()
+{
+    int index = setwindow->comboBox_screen->currentIndex();
+    if(setwindow->checkBox_show->isChecked())
+    {
+        if(index)
+            background[index-1].close();
+        else
+        {
+            for(int i=0; i<bgCount; ++i)
+                background[i].close();
+        }
+    }
+    else
+    {
+        if(index)
+            background[index-1].showFullScreen();
+        else
+        {
+            for(int i=0; i<bgCount; ++i)
+                background[i].showFullScreen();
+        }
+    }
 }
