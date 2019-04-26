@@ -1,11 +1,14 @@
 #include "desktopgo.h"
-#include <QFileDialog>
-#include <QVBoxLayout>
 #include <QStandardPaths>
-#include <QMouseEvent>
-#include <QMenu>
 #include <QDesktopWidget>
 #include <QApplication>
+#include <QMouseEvent>
+#include <QFileDialog>
+#include <QVBoxLayout>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QBrush>
+#include <QMenu>
 #include <QDebug>
 
 DesktopGo::DesktopGo(QWidget *parent)
@@ -16,27 +19,46 @@ DesktopGo::DesktopGo(QWidget *parent)
     QDesktopWidget* desktop = QApplication::desktop();
     bgCount = desktop->screenCount();
     background = new VideoWidget[bgCount];
-    for(int i=0; i<bgCount; ++i)
-    {
-        background[i].showFullScreen();
-        background[i].move(desktop->screen(i)->pos());
-        background[i].setMaximumSize(desktop->screen(i)->size());
-    }
 
     initUI();
     initTrayUI();
+
+    QFile file("wallpaper.save");
+    if(file.open(QIODevice::ReadOnly))
+    {
+        for(int i=0; i<bgCount; ++i)
+        {
+            QString wallpaperPath = QString::fromLocal8Bit(file.readLine());
+            wallpaperPath.replace("\n", "");
+            background[i].setUrl(wallpaperPath);
+            background[i].showFullScreen();
+            background[i].move(desktop->screen(i)->pos());
+            background[i].setMaximumSize(desktop->screen(i)->size());
+        }
+    }
+    file.close();
+
+    timer.start(5000);
+}
+
+DesktopGo::~DesktopGo()
+{
+
 }
 
 void DesktopGo::initUI()
 {
     this->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_TranslucentBackground,true);
 
     setwindow->comboBox_screen->addItem("所有屏幕");
     for(int i=0; i<bgCount; ++i)
         setwindow->comboBox_screen->addItem(QString("第%1块屏幕").arg(i+1));
+    connect(setwindow->comboBox_screen, SIGNAL(currentIndexChanged(int)), this, SLOT(bgItemChanged(int)));
     connect(setwindow->pushButton_close, SIGNAL(clicked(bool)), this, SLOT(hideSetWindow()));
     connect(setwindow->pushButton_wallpaper, SIGNAL(clicked(bool)), this, SLOT(openFile()));
     connect(setwindow->checkBox_show, SIGNAL(stateChanged(int)), this, SLOT(showBackground()));
+    connect(&timer, SIGNAL(timeout()), this, SLOT(auto_save()));
 }
 
 void DesktopGo::initTrayUI()
@@ -52,18 +74,13 @@ void DesktopGo::initTrayUI()
     systray->m_topWidget = new QWidget();
     systray->m_topWidget->setMinimumHeight(50);
     systray->m_topWidgetAction = new QWidgetAction(systray->m_trayMenu);
-    systray->m_topLabel = new QLabel(QStringLiteral(""));
-    QPixmap pixmap(":menu/bkg.jpg");
-    QPalette palette;
-    palette.setBrush(QPalette::Background, QBrush(pixmap));
-    systray->m_topWidget->setAutoFillBackground(true);
-    systray->m_topWidget->setPalette(palette);
-
+    systray->m_topLabel = new QLabel(QStringLiteral(""));;
+    systray->m_topLabel->setStyleSheet("QLabel{border-image:url(:/menu/bkg.jpg);}");
     QVBoxLayout* m_topLayout = new QVBoxLayout();
-    m_topLayout->addWidget(systray->m_topLabel, 0, Qt::AlignLeft|Qt::AlignVCenter);
+    m_topLayout->addWidget(systray->m_topLabel);
 
-    m_topLayout->setSpacing(5);
-    m_topLayout->setContentsMargins(5, 5, 5, 5);
+    m_topLayout->setSpacing(0);
+    m_topLayout->setContentsMargins(0, 0, 0, 0);
 
     systray->m_topWidget->setLayout(m_topLayout);
     systray->m_topWidget->installEventFilter(this);
@@ -99,10 +116,11 @@ void DesktopGo::initTrayUI()
     systray->m_bottomWidget = new QWidget();
     systray->m_bottomWidgetAction = new QWidgetAction(systray->m_trayMenu);
 
-    systray->m_aboutBtn = new QPushButton(QIcon(":menu/about.ico"), QStringLiteral("关于"));
+    systray->m_aboutBtn = new QPushButton(QIcon(":menu/about.ico"), QStringLiteral("新建"));
+
     systray->m_aboutBtn->setObjectName(QStringLiteral("TrayButton"));
     systray->m_aboutBtn->setFixedSize(60, 25);
-
+    connect(systray->m_aboutBtn, SIGNAL(clicked(bool)), this, SLOT(addDocker()));
     systray->m_exitBtn = new QPushButton(QIcon(":menu/quit.ico"), QStringLiteral("退出"));
     connect(systray->m_exitBtn, SIGNAL(clicked(bool)), this, SLOT(quit()));
     systray->m_exitBtn->setObjectName(QStringLiteral("TrayButton"));
@@ -168,6 +186,41 @@ void DesktopGo::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void DesktopGo::paintEvent(QPaintEvent *event)
+{
+    //开始绘制界面
+    QPainter painter(this);
+    QPen pen;
+    pen.setColor(QColor(0,0,0,0));
+    painter.setPen(pen);
+    //设置透明画刷
+    QImage img(QSize(480,480), QImage::Format_ARGB32);
+    img.fill(0xb0404040);
+    QBrush brush(img);
+    painter.setBrush(brush);
+    painter.drawRoundedRect(this->rect(), 15, 15);
+}
+
+void DesktopGo::bgItemChanged(int index)
+{
+    if(index)
+    {
+        if(background[index-1].isVisible())
+        {
+            setwindow->checkBox_show->setChecked(false);
+        }
+        else
+        {
+            setwindow->checkBox_show->setChecked(true);
+        }
+        setwindow->lineEdit_wallpaper->setText(background[index-1].getUrl());
+    }
+    else
+    {
+        setwindow->lineEdit_wallpaper->clear();
+    }
+}
+
 void DesktopGo::openFile()
 {
     QUrl url = QFileDialog::getOpenFileUrl(this);
@@ -194,6 +247,30 @@ void DesktopGo::repair()
 void DesktopGo::quit()
 {
     exit(0);
+}
+
+void DesktopGo::addDocker()
+{
+    dockers.addDocker("", QPoint(100,100));
+}
+
+void DesktopGo::auto_save()
+{
+    QString savePath = "wallpaper.save";
+    QFile file(savePath);
+    if(!file.open(QIODevice::WriteOnly))
+    {
+        return;
+    }
+
+    for(int i=0; i<bgCount; ++i)
+    {
+        file.write(background[i].getUrl().toLocal8Bit());
+        file.write("\n");
+    }
+    file.close();
+
+    dockers.save();
 }
 
 void DesktopGo::showSetWindow()

@@ -200,9 +200,6 @@ DockerManager::DockerManager(QObject *parent) : QObject(parent)
 {
     savePath = "DesktopGO.save";
     recover();
-    //定时保存状态，避免程序崩溃导致用户配置丢失
-    connect(&timer, SIGNAL(timeout()), this, SLOT(save()));
-    timer.start(5000);
 }
 
 DockerManager::~DockerManager()
@@ -419,7 +416,7 @@ void DockerManager::recover()
         }
     }
     if(map.empty())
-        addDocker("");
+        addDocker("", QPoint(100,100));
 }
 
 //移动单个容器时，容器所在的连通图内所有容器会跟随移动

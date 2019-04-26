@@ -42,10 +42,6 @@ VideoWidget::VideoWidget(QWidget* parent)
 //    connect(&mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
     connect(&mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
     connect(&mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
-
-    savePath = "wallpaper.save";
-    read();
-    setUrl(QUrl(wallpaperPath));
 }
 
 void VideoWidget::setUrl(const QUrl &url)
@@ -56,7 +52,11 @@ void VideoWidget::setUrl(const QUrl &url)
     play();
     //保存路径
     wallpaperPath = "file:///"+url.toLocalFile();
-    save();
+}
+
+QString VideoWidget::getUrl() const
+{
+    return wallpaperPath;
 }
 
 void VideoWidget::play()
@@ -80,26 +80,6 @@ void VideoWidget::repair()
 void VideoWidget::setMuted(bool disable)
 {
     mediaPlayer.setMuted( disable );
-}
-
-void VideoWidget::save()
-{
-    QFile file(savePath);
-    if(file.open(QIODevice::WriteOnly))
-    {
-        file.write(wallpaperPath.toLocal8Bit());
-    }
-    file.close();
-}
-
-void VideoWidget::read()
-{
-    QFile file(savePath);
-    if(file.open(QIODevice::ReadOnly))
-    {
-        wallpaperPath = QString::fromLocal8Bit(file.readAll());
-    }
-    file.close();
 }
 
 void VideoWidget::setWallPaperParent()

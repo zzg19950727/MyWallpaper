@@ -8,16 +8,18 @@
 #include <QPolygonF>
 #include <QPainter>
 #include <QBrush>
+
 #include <QVector>
-#include <QImage>
-#include <QPen>
 #include <QAction>
+#include <QImage>
 #include <QMenu>
+#include <QPen>
+
+#include <QFileIconProvider>
 #include <QDesktopServices>
+#include <QFileInfo>
 #include <QMimeData>
 #include <QDir>
-#include <QFileIconProvider>
-#include <QFileInfo>
 
 HexWidget::HexWidget(QWidget *parent)
     : QWidget(parent)
@@ -97,6 +99,10 @@ void HexWidget::mousePressEvent(QMouseEvent *event)
             event->accept();
         }
     }
+    if(event->modifiers()&Qt::ControlModifier)
+    {
+        slot_hideLinked();
+    }
 }
 
 void HexWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -175,11 +181,10 @@ void HexWidget::contextMenuEvent(QContextMenuEvent *e)
     QAction* close = new QAction(QIcon(":images/close.ico"),"关闭");
     connect(close, SIGNAL(triggered(bool)), this, SLOT(closeDocker()));
 
+    menu->addAction(hide);
     menu->addAction(add);
     menu->addAction(lock_pos);
-    menu->addAction(lock_pos);
     menu->addAction(free);
-    menu->addAction(hide);
     menu->addAction(close);
     menu->exec(e->globalPos());
     delete menu;

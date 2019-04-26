@@ -1,9 +1,9 @@
 #ifndef HEXWIDGET_H
 #define HEXWIDGET_H
 #include <QWidget>
-#include <QPoint>
 #include <QPixmap>
 #include <QString>
+#include <QPoint>
 #include <QUrl>
 class HexWidget : public QWidget
 {

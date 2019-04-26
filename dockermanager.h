@@ -1,12 +1,10 @@
 #ifndef DOCKERMANAGER_H
 #define DOCKERMANAGER_H
-
+#include "hexwidget.h"
+#include <QVector>
 #include <QObject>
 #include <QSet>
 #include <QMap>
-#include <QVector>
-#include <QTimer>
-#include "hexwidget.h"
 
 class DockerManager : public QObject
 {
@@ -38,11 +36,11 @@ public:
     HexWidget* addDocker(const QString& url);
     HexWidget* addDocker(const QString& url, const QPoint& pos);
     int size();
+    void save();
 
 private slots:
-    void save();
-    void recover();
     void moveDocker(const QPoint& offset);
+    void recover();
     void adjustDocker();
     void freeDocker();
     void closeDocker();
@@ -56,8 +54,6 @@ private:
     //上一次移动的连通图的缓存
     QSet<HexWidget*> cache;
     QString savePath;
-    QTimer timer;
-
 };
 
 #endif // DOCKERMANAGER_H

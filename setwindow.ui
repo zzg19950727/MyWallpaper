@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>326</width>
-    <height>220</height>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,6 +63,9 @@ height:30px;</string>
    </item>
    <item>
     <widget class="QFrame" name="frame">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -74,16 +77,49 @@ height:30px;</string>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <widget class="QLabel" name="label_3">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="text">
-           <string>桌面选择：</string>
+           <string>  桌面选择：</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox_screen"/>
+         <widget class="QComboBox" name="comboBox_screen">
+          <property name="styleSheet">
+           <string notr="true">/*background-color: transparent;
+color: rgb(240, 240, 240);
+border: 1px solid rgb(240,240,240);
+border-radius:6px;*/
+height:20px;
+width:60px;
+QComboBox QAbstractItemView
+{
+    background-color: gray;
+	selection-background-color: lightgray;
+}
+QComboBox::drop-down 
+{
+     subcontrol-origin:paddind;  
+     subcontrol-position: top right;
+     width: 15px;
+     border-left-width: 1px;
+     border-left-color: darkgray;
+     border-left-style: solid; /* just a single line */
+     border-top-right-radius: 3px; /* same radius as the QComboBox */
+     border-bottom-right-radius: 3px;
+ }</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_show">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="text">
            <string>不显示</string>
           </property>
@@ -108,6 +144,10 @@ height:30px;</string>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="label">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="text">
            <string>  壁纸文件：</string>
           </property>
@@ -123,7 +163,12 @@ height:30px;</string>
         <item>
          <widget class="QPushButton" name="pushButton_wallpaper">
           <property name="styleSheet">
-           <string notr="true"/>
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);
+border: 3px solid rgb(0,190,190);
+border-radius:6px;
+height:20px;
+width:40px;</string>
           </property>
           <property name="text">
            <string>选择</string>
@@ -136,6 +181,10 @@ height:30px;</string>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label_2">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="text">
            <string>备份文件夹：</string>
           </property>
@@ -150,6 +199,14 @@ height:30px;</string>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_backup">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);
+border: 3px solid rgb(0,190,190);
+border-radius:6px;
+height:20px;
+width:40px;</string>
+          </property>
           <property name="text">
            <string>选择</string>
           </property>
@@ -159,6 +216,10 @@ height:30px;</string>
       </item>
       <item>
        <widget class="QCheckBox" name="checkBox_auto_create">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+        </property>
         <property name="text">
          <string>自动监控文件</string>
         </property>
@@ -168,6 +229,10 @@ height:30px;</string>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QCheckBox" name="checkBox_muted">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="text">
            <string>静音</string>
           </property>
@@ -175,6 +240,10 @@ height:30px;</string>
         </item>
         <item>
          <widget class="QSlider" name="horizontalSlider_volumn">
+          <property name="styleSheet">
+           <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -197,6 +266,10 @@ height:30px;</string>
       </item>
       <item>
        <widget class="QCheckBox" name="checkBox_enable_drag">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+color: rgb(240, 240, 240);</string>
+        </property>
         <property name="text">
          <string>启用拖拽</string>
         </property>

@@ -1,14 +1,15 @@
 #ifndef DESKTOPGO_H
 #define DESKTOPGO_H
-#include "videowidget.h"
 #include "dockermanager.h"
 #include "ui_setwindow.h"
+#include "videowidget.h"
 #include <Qsystemtrayicon>
 #include <QWidgetAction>
 #include <QPushButton>
+#include <QWidget>
+#include <QTimer>
 #include <QPoint>
 #include <QLabel>
-#include <QWidget>
 
 typedef struct __SystemTray
 {
@@ -44,18 +45,23 @@ class DesktopGo : public QWidget
     Q_OBJECT
 public:
     explicit DesktopGo(QWidget *parent = 0);
+    ~DesktopGo();
     void initUI();
     void initTrayUI();
     //重新定义鼠标拖拽移动窗口功能
     void mousePressEvent(QMouseEvent*);
     void mouseMoveEvent(QMouseEvent*);
+    void paintEvent(QPaintEvent *event);
 
 signals:
 
 public slots:
+    void bgItemChanged(int);
     void openFile();
     void repair();
     void quit();
+    void addDocker();
+    void auto_save();
 
 private slots:
     void showSetWindow();
@@ -73,5 +79,6 @@ private:
     //设置界面
     Ui::Form* setwindow;
     QPoint __dragPosition;
+    QTimer timer;
 };
 #endif // DESKTOPGO_H
